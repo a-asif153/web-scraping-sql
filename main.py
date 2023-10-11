@@ -1,3 +1,7 @@
+import smtplib
+import ssl
+import time
+
 import requests
 import selectorlib
 
@@ -20,7 +24,19 @@ def extract(source):
     return value
 
 
-def send_email():
+def send_email(message):
+    host = "smtp.gmail.com"
+    port = 465
+
+    username = "app_flask@gmail.com"
+    password = "here_goes_your_gmail_password"
+
+    receiver = "app_flask@gmail.com"
+    context = ssl.create_default_context()
+
+    with smtplib.SMTP_SSL(host, port, context=context) as server:
+        server.login(username, password)
+        server.sendmail(username, receiver, message)
     print("Email was sent!")
 
 
@@ -35,12 +51,14 @@ def read(extracted):
 
 
 if __name__ == "__main__":
-    scraped = scrape(URL)
-    extracted = extract(scraped)
-    print(extracted)
+    while True:
+        scraped = scrape(URL)
+        extracted = extract(scraped)
+        print(extracted)
 
-    content = read(extracted)
-    if extracted != "No upcoming tours":
-        if extracted not in content:
-            store(extracted)
-            send_email()
+        content = read(extracted)
+        if extracted != "No upcoming tours":
+            if extracted not in content:
+                store(extracted)
+                send_email(message="Hey, new event was found!")
+        time.sleep(2)
